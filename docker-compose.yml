@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  bot:
+    build: .
+    env_file: .env
+    ports:
+      - "9300:9300"
+    
+    volumes:
+      - ./service_account.json:/app/service_account.json:ro

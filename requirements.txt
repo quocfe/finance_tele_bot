@@ -1,0 +1,16 @@
+# Web Framework & Server
+fastapi==0.133.0
+uvicorn==0.27.0
+python-multipart>=0.0.18
+
+# Telegram Bot API
+python-telegram-bot==20.8
+
+
+# Google Sheets API
+gspread==6.0.0
+google-auth>=2.0.0
+
+# Utilities
+python-dotenv==1.0.1
+pydantic==2.7.0
