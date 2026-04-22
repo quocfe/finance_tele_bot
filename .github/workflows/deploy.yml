@@ -60,12 +60,14 @@ jobs:
 
       - name: Deploy
         run: |
-          cd /home/dev/data/finance_bot
-          docker-compose down
-          docker image prune -af
-          docker builder prune -af
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          docker-compose up -d
+          ssh dev@ssh.nguyenphuquoc.io.vn << 'EOF'
+            cd data/finance_bot
+            docker-compose down
+            docker image prune -af
+            docker builder prune -af
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            docker-compose up -d
+          EOF
         env:
           CLOUDFLARED_SERVICE_TOKEN_ID: ${{ secrets.CF_SERVICE_TOKEN_ID }}
           CLOUDFLARED_SERVICE_TOKEN_SECRET: ${{ secrets.CF_SERVICE_TOKEN_SECRET }}
