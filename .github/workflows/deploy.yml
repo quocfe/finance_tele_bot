@@ -37,7 +37,7 @@ jobs:
 
   deploy-prod:
     needs: build-and-push
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Install cloudflared
         run: |
@@ -66,4 +66,7 @@ jobs:
           docker builder prune -af
           docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           docker-compose up -d
+        env:
+          CLOUDFLARED_SERVICE_TOKEN_ID: ${{ secrets.CF_SERVICE_TOKEN_ID }}
+          CLOUDFLARED_SERVICE_TOKEN_SECRET: ${{ secrets.CF_SERVICE_TOKEN_SECRET }}
 
