@@ -49,26 +49,26 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+          
           cat >> ~/.ssh/config << EOF
           Host ssh.nguyenphuquoc.io.vn
-            ProxyCommand cloudflared access ssh --hostname %h
+            ProxyCommand cloudflared access ssh --hostname %h --service-token-id ${{ secrets.CF_SERVICE_TOKEN_ID }} --service-token-secret ${{ secrets.CF_SERVICE_TOKEN_SECRET }}
             StrictHostKeyChecking no
+            User dev
+            IdentityFile ~/.ssh/id_rsa
           EOF
-        env:
-          CLOUDFLARED_SERVICE_TOKEN_ID: ${{ secrets.CF_SERVICE_TOKEN_ID }}
-          CLOUDFLARED_SERVICE_TOKEN_SECRET: ${{ secrets.CF_SERVICE_TOKEN_SECRET }}
 
       - name: Deploy
         run: |
-          ssh dev@ssh.nguyenphuquoc.io.vn << 'EOF'
+          IMAGE_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          
+          ssh -T ssh.nguyenphuquoc.io.vn << EOF
             cd data/finance_bot
-            docker-compose down
-            docker image prune -af
-            docker builder prune -af
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            docker-compose up -d
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+            
+            docker-compose pull
+            docker-compose up -d --remove-orphans
+            
+            docker image prune -f
           EOF
-        env:
-          CLOUDFLARED_SERVICE_TOKEN_ID: ${{ secrets.CF_SERVICE_TOKEN_ID }}
-          CLOUDFLARED_SERVICE_TOKEN_SECRET: ${{ secrets.CF_SERVICE_TOKEN_SECRET }}
 
