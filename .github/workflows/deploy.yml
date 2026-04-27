@@ -45,14 +45,21 @@ jobs:
           chmod +x cloudflared && sudo mv cloudflared /usr/local/bin/
 
       - name: Setup SSH
+        env:
+          CF_SERVICE_TOKEN_ID: ${{ secrets.CF_SERVICE_TOKEN_ID }}
+          CF_SERVICE_TOKEN_SECRET: ${{ secrets.CF_SERVICE_TOKEN_SECRET }}
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          
-          cat >> ~/.ssh/config << EOF
+
+          # Ghi env vars vào file để ProxyCommand dùng được
+          echo "CF_ACCESS_CLIENT_ID=${CF_SERVICE_TOKEN_ID}" >> ~/.ssh/cloudflared_env
+          echo "CF_ACCESS_CLIENT_SECRET=${CF_SERVICE_TOKEN_SECRET}" >> ~/.ssh/cloudflared_env
+
+          cat >> ~/.ssh/config << 'EOF'
           Host ssh.nguyenphuquoc.io.vn
-            ProxyCommand cloudflared access ssh --hostname ssh.nguyenphuquoc.io.vn --service-token-id ${{ secrets.CF_SERVICE_TOKEN_ID }} --service-token-secret ${{ secrets.CF_SERVICE_TOKEN_SECRET }}
+            ProxyCommand bash -c 'source ~/.ssh/cloudflared_env && cloudflared access ssh --hostname ssh.nguyenphuquoc.io.vn'
             StrictHostKeyChecking no
             User dev
             IdentityFile ~/.ssh/id_rsa
