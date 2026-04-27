@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   bot:
-    build: .
+    image: ghcr.io/quocnguyen192/finance_tele_bot:latest
     env_file: .env
     ports:
       - "9300:9300"
