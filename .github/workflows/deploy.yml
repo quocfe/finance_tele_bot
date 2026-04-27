@@ -56,6 +56,7 @@ jobs:
             StrictHostKeyChecking no
             User dev
             IdentityFile ~/.ssh/id_rsa
+            Port 2201
           EOF
 
       - name: Deploy
