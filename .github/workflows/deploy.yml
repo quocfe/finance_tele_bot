@@ -45,38 +45,30 @@ jobs:
           chmod +x cloudflared && sudo mv cloudflared /usr/local/bin/
 
       - name: Setup SSH
-        env:
-          CF_SERVICE_TOKEN_ID: ${{ secrets.CF_SERVICE_TOKEN_ID }}
-          CF_SERVICE_TOKEN_SECRET: ${{ secrets.CF_SERVICE_TOKEN_SECRET }}
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          # Ghi env vars vào file để ProxyCommand dùng được
-          echo "CF_ACCESS_CLIENT_ID=${CF_SERVICE_TOKEN_ID}" >> ~/.ssh/cloudflared_env
-          echo "CF_ACCESS_CLIENT_SECRET=${CF_SERVICE_TOKEN_SECRET}" >> ~/.ssh/cloudflared_env
-
-          cat >> ~/.ssh/config << 'EOF'
+          cat >> ~/.ssh/config << 'SSHEOF'
           Host ssh.nguyenphuquoc.io.vn
-            ProxyCommand bash -c 'source ~/.ssh/cloudflared_env && cloudflared access ssh --hostname ssh.nguyenphuquoc.io.vn'
+            ProxyCommand cloudflared access ssh --hostname ssh.nguyenphuquoc.io.vn
             StrictHostKeyChecking no
             User dev
             IdentityFile ~/.ssh/id_rsa
             Port 2201
-          EOF
+          SSHEOF
 
       - name: Deploy
+        env:
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_SERVICE_TOKEN_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_SERVICE_TOKEN_SECRET }}
         run: |
-          IMAGE_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          
-          ssh -T ssh.nguyenphuquoc.io.vn << EOF
+          ssh -T ssh.nguyenphuquoc.io.vn << 'EOF'
             cd data/finance_bot
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
-            
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker-compose pull
             docker-compose up -d --remove-orphans
-            
             docker image prune -f
           EOF
 
