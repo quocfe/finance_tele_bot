@@ -52,7 +52,7 @@ jobs:
           
           cat >> ~/.ssh/config << EOF
           Host ssh.nguyenphuquoc.io.vn
-            ProxyCommand cloudflared access ssh --hostname %h --service-token-id ${{ secrets.CF_SERVICE_TOKEN_ID }} --service-token-secret ${{ secrets.CF_SERVICE_TOKEN_SECRET }}
+            ProxyCommand cloudflared access ssh --hostname ssh.nguyenphuquoc.io.vn:2201 --service-token-id ${{ secrets.CF_SERVICE_TOKEN_ID }} --service-token-secret ${{ secrets.CF_SERVICE_TOKEN_SECRET }}
             StrictHostKeyChecking no
             User dev
             IdentityFile ~/.ssh/id_rsa
